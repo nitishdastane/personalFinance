@@ -112,3 +112,48 @@ export async function getDashboardSummary() {
   const response = await fetch(`${API_BASE_URL}/dashboard/summary`);
   return response.json();
 }
+
+export async function getCategories(type?: 'income' | 'expense') {
+  const url = type
+    ? `${API_BASE_URL}/categories?type=${type}`
+    : `${API_BASE_URL}/categories`;
+  const response = await fetch(url);
+  return response.json();
+}
+
+export async function createCategory(data: {
+  name: string;
+  type: 'income' | 'expense';
+  icon?: string;
+  color?: string;
+}) {
+  const response = await fetch(`${API_BASE_URL}/categories`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return response.json();
+}
+
+export async function updateCategory(
+  id: string,
+  data: {
+    name?: string;
+    icon?: string;
+    color?: string;
+  }
+) {
+  const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return response.json();
+}
+
+export async function deleteCategory(id: string) {
+  const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
+    method: 'DELETE',
+  });
+  return response.json();
+}

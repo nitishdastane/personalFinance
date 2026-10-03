@@ -59,3 +59,16 @@ model CreditCardTransaction {
   @@index([creditCardId])
   @@index([transactionDate])
 }
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  type        String   // "income" or "expense"
+  icon        String?  // emoji or icon name
+  color       String?  // hex color code
+  isDefault   Boolean  @default(false) // true for pre-defined categories
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([type])
+}

@@ -3,7 +3,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Dashboard from './pages/Dashboard';
 import Accounts from './pages/Accounts';
 import TransactionsView from './pages/TransactionsView';
-import { Menu, X, Home, LayoutGrid, ArrowLeft } from 'lucide-react';
+import Categories from './pages/Categories';
+import { Menu, X, Home, LayoutGrid, ArrowLeft, Tag } from 'lucide-react';
 
 const queryClient = new QueryClient();
 
@@ -18,6 +19,7 @@ export default function App() {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'accounts', label: 'Accounts', icon: LayoutGrid },
+    { id: 'categories', label: 'Categories', icon: Tag },
   ];
 
   return (
@@ -101,6 +103,7 @@ export default function App() {
                 }}
               />
             )}
+            {currentPage === 'categories' && <Categories />}
           </main>
         </div>
       </div>

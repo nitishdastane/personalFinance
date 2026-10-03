@@ -5,6 +5,7 @@ import { importBankStatement, importCreditCardStatement } from './services/impor
 import { getBankAccounts, getCreditCards } from './services/accountService';
 import { getBankTransactions, getCreditCardTransactions } from './services/transactionService';
 import { getDashboardSummary } from './services/dashboardService';
+import { getAllCategories, createCategory, updateCategory, deleteCategory } from './services/categoryService';
 
 dotenv.config();
 
@@ -21,7 +22,7 @@ const server = http.createServer(async (req, res) => {
   const { path, params } = parseUrl(req.url || '/');
 
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   res.setHeader('Content-Type', 'application/json');
 
@@ -116,6 +117,72 @@ const server = http.createServer(async (req, res) => {
       });
       res.writeHead(200);
       res.end(JSON.stringify({ success: true, ...result }));
+      return;
+    }
+
+    // Categories - GET all
+    if (path === '/api/categories' && req.method === 'GET') {
+      const type = params.get('type') as any;
+      const categories = await getAllCategories(type);
+      res.writeHead(200);
+      res.end(JSON.stringify({ success: true, data: categories }));
+      return;
+    }
+
+    // Categories - POST create
+    if (path === '/api/categories' && req.method === 'POST') {
+      const chunks: Buffer[] = [];
+      req.on('data', chunk => { chunks.push(chunk); });
+      req.on('end', async () => {
+        try {
+          const body = JSON.parse(Buffer.concat(chunks).toString('utf-8'));
+          const { name, type, icon, color } = body;
+          if (!name || !type) {
+            res.writeHead(400);
+            res.end(JSON.stringify({ error: 'name and type required' }));
+            return;
+          }
+          const category = await createCategory(name, type, icon, color);
+          res.writeHead(201);
+          res.end(JSON.stringify({ success: true, data: category }));
+        } catch (error) {
+          res.writeHead(400);
+          res.end(JSON.stringify({ success: false, error: (error as Error).message }));
+        }
+      });
+      return;
+    }
+
+    // Categories - PATCH update
+    if (path.startsWith('/api/categories/') && req.method === 'PATCH') {
+      const id = path.split('/')[3];
+      const chunks: Buffer[] = [];
+      req.on('data', chunk => { chunks.push(chunk); });
+      req.on('end', async () => {
+        try {
+          const body = JSON.parse(Buffer.concat(chunks).toString('utf-8'));
+          const category = await updateCategory(id, body);
+          res.writeHead(200);
+          res.end(JSON.stringify({ success: true, data: category }));
+        } catch (error) {
+          res.writeHead(400);
+          res.end(JSON.stringify({ success: false, error: (error as Error).message }));
+        }
+      });
+      return;
+    }
+
+    // Categories - DELETE
+    if (path.startsWith('/api/categories/') && req.method === 'DELETE') {
+      const id = path.split('/')[3];
+      try {
+        const category = await deleteCategory(id);
+        res.writeHead(200);
+        res.end(JSON.stringify({ success: true, data: category }));
+      } catch (error) {
+        res.writeHead(400);
+        res.end(JSON.stringify({ success: false, error: (error as Error).message }));
+      }
       return;
     }
 
