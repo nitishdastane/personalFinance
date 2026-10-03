@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useBankTransactions, useCreditCardTransactions } from '../hooks/useTransactions';
+import { useDetectTransfers } from '../hooks/useTransferDetection';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
@@ -24,6 +25,9 @@ export default function TransactionsView({
   const [sortBy, setSortBy] = useState('transactionDate');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [page, setPage] = useState(1);
+  const [detectMessage, setDetectMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const detectTransfersMutation = useDetectTransfers();
 
   const isBank = type === 'bank';
   const { data: bankData, isLoading: bankLoading } = useBankTransactions(
@@ -58,14 +62,54 @@ export default function TransactionsView({
   const total = data?.pagination?.total || 0;
   const pageCount = Math.ceil(total / 20);
 
+  const handleDetectTransfers = async () => {
+    setDetectMessage(null);
+    try {
+      const result = await detectTransfersMutation.mutateAsync();
+      setDetectMessage({
+        type: 'success',
+        text: `Found ${result.data.found} internal transfers and marked them`,
+      });
+      setTimeout(() => setDetectMessage(null), 5000);
+    } catch (error) {
+      setDetectMessage({
+        type: 'error',
+        text: error instanceof Error ? error.message : 'Failed to detect transfers',
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">
-          {isBank ? 'Bank' : 'Credit Card'} Transactions
-        </h1>
-        <p className="text-gray-600 mt-1">View and filter your transactions</p>
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">
+            {isBank ? 'Bank' : 'Credit Card'} Transactions
+          </h1>
+          <p className="text-gray-600 mt-1">View and filter your transactions</p>
+        </div>
+        {isBank && (
+          <Button
+            onClick={handleDetectTransfers}
+            disabled={detectTransfersMutation.isPending}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+          >
+            🔍 {detectTransfersMutation.isPending ? 'Detecting...' : 'Detect Transfers'}
+          </Button>
+        )}
       </div>
+
+      {detectMessage && (
+        <div
+          className={`p-3 rounded-lg text-sm ${
+            detectMessage.type === 'success'
+              ? 'bg-green-50 text-green-800 border border-green-200'
+              : 'bg-red-50 text-red-800 border border-red-200'
+          }`}
+        >
+          {detectMessage.type === 'success' ? '✓' : '✗'} {detectMessage.text}
+        </div>
+      )}
 
       <Card>
         <CardHeader>
@@ -207,6 +251,8 @@ export default function TransactionsView({
                     <th className="px-4 py-2 text-left font-medium text-gray-700">Date</th>
                     <th className="px-4 py-2 text-left font-medium text-gray-700">Description</th>
                     {isBank && <th className="px-4 py-2 text-left font-medium text-gray-700">Type</th>}
+                    <th className="px-4 py-2 text-left font-medium text-gray-700">Category</th>
+                    <th className="px-4 py-2 text-left font-medium text-gray-700">Transfer Info</th>
                     <th className="px-4 py-2 text-right font-medium text-gray-700">Amount</th>
                   </tr>
                 </thead>
@@ -249,6 +295,22 @@ export default function TransactionsView({
                             </span>
                           </td>
                         )}
+                        <td className="px-4 py-2">
+                          <select
+                            className="px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            defaultValue="other"
+                          >
+                            <option value="other">—</option>
+                            <option value="account-to-account">Account to Account</option>
+                            <option value="credit-card-payment">Credit Card Payment</option>
+                            <option value="groceries">Groceries</option>
+                            <option value="food-dining">Food & Dining</option>
+                          </select>
+                        </td>
+                        <td className="px-4 py-2 text-xs text-gray-600">
+                          {/* Placeholder for From → To info */}
+                          —
+                        </td>
                         <td className="px-4 py-2 text-right font-semibold">
                           {amount ? (
                             <span className={!isDebit ? 'text-green-600' : 'text-red-600'}>

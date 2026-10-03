@@ -6,6 +6,7 @@ import { getBankAccounts, getCreditCards } from './services/accountService';
 import { getBankTransactions, getCreditCardTransactions } from './services/transactionService';
 import { getDashboardSummary } from './services/dashboardService';
 import { getAllCategories, createCategory, updateCategory, deleteCategory } from './services/categoryService';
+import { detectTransfers, getTransferPatterns, addTransferPattern, updateTransferPattern, deleteTransferPattern } from './services/transferService';
 
 dotenv.config();
 
@@ -227,6 +228,89 @@ const server = http.createServer(async (req, res) => {
         res.writeHead(500);
         res.end(JSON.stringify({ success: false, error: error.message }));
       });
+      return;
+    }
+
+    // Transfers - Detect transfers
+    if (path === '/api/transfers/detect' && req.method === 'POST') {
+      try {
+        const result = await detectTransfers();
+        res.writeHead(200);
+        res.end(JSON.stringify({ success: true, data: result }));
+      } catch (error) {
+        res.writeHead(400);
+        res.end(JSON.stringify({ success: false, error: (error as Error).message }));
+      }
+      return;
+    }
+
+    // Transfer Patterns - GET all
+    if (path === '/api/transfer-patterns' && req.method === 'GET') {
+      try {
+        const patterns = await getTransferPatterns();
+        res.writeHead(200);
+        res.end(JSON.stringify({ success: true, data: patterns }));
+      } catch (error) {
+        res.writeHead(400);
+        res.end(JSON.stringify({ success: false, error: (error as Error).message }));
+      }
+      return;
+    }
+
+    // Transfer Patterns - POST create
+    if (path === '/api/transfer-patterns' && req.method === 'POST') {
+      const chunks: Buffer[] = [];
+      req.on('data', chunk => { chunks.push(chunk); });
+      req.on('end', async () => {
+        try {
+          const body = JSON.parse(Buffer.concat(chunks).toString('utf-8'));
+          const { pattern, targetBankName, description } = body;
+          if (!pattern || !targetBankName) {
+            res.writeHead(400);
+            res.end(JSON.stringify({ error: 'pattern and targetBankName required' }));
+            return;
+          }
+          const result = await addTransferPattern(pattern, targetBankName, description);
+          res.writeHead(201);
+          res.end(JSON.stringify({ success: true, data: result }));
+        } catch (error) {
+          res.writeHead(400);
+          res.end(JSON.stringify({ success: false, error: (error as Error).message }));
+        }
+      });
+      return;
+    }
+
+    // Transfer Patterns - PATCH update
+    if (path.startsWith('/api/transfer-patterns/') && req.method === 'PATCH') {
+      const id = path.split('/')[3];
+      const chunks: Buffer[] = [];
+      req.on('data', chunk => { chunks.push(chunk); });
+      req.on('end', async () => {
+        try {
+          const body = JSON.parse(Buffer.concat(chunks).toString('utf-8'));
+          const result = await updateTransferPattern(id, body);
+          res.writeHead(200);
+          res.end(JSON.stringify({ success: true, data: result }));
+        } catch (error) {
+          res.writeHead(400);
+          res.end(JSON.stringify({ success: false, error: (error as Error).message }));
+        }
+      });
+      return;
+    }
+
+    // Transfer Patterns - DELETE
+    if (path.startsWith('/api/transfer-patterns/') && req.method === 'DELETE') {
+      const id = path.split('/')[3];
+      try {
+        const result = await deleteTransferPattern(id);
+        res.writeHead(200);
+        res.end(JSON.stringify({ success: true, data: result }));
+      } catch (error) {
+        res.writeHead(400);
+        res.end(JSON.stringify({ success: false, error: (error as Error).message }));
+      }
       return;
     }
 

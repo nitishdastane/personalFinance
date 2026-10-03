@@ -157,3 +157,52 @@ export async function deleteCategory(id: string) {
   });
   return response.json();
 }
+
+export async function detectTransfers() {
+  const response = await fetch(`${API_BASE_URL}/transfers/detect`, {
+    method: 'POST',
+  });
+  return response.json();
+}
+
+export async function getTransferPatterns() {
+  const response = await fetch(`${API_BASE_URL}/transfer-patterns`);
+  return response.json();
+}
+
+export async function addTransferPattern(data: {
+  pattern: string;
+  targetBankName: string;
+  description?: string;
+}) {
+  const response = await fetch(`${API_BASE_URL}/transfer-patterns`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return response.json();
+}
+
+export async function updateTransferPattern(
+  id: string,
+  data: {
+    pattern?: string;
+    targetBankName?: string;
+    description?: string;
+    isActive?: boolean;
+  }
+) {
+  const response = await fetch(`${API_BASE_URL}/transfer-patterns/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return response.json();
+}
+
+export async function deleteTransferPattern(id: string) {
+  const response = await fetch(`${API_BASE_URL}/transfer-patterns/${id}`, {
+    method: 'DELETE',
+  });
+  return response.json();
+}

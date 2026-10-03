@@ -28,6 +28,7 @@ model CreditCard {
 model BankTransaction {
   id                  String   @id @default(cuid())
   bankAccountId       String
+  categoryId          String?  // Optional category for transfers and expense categorization
   transactionDate     DateTime
   transactionDetails  String
   debitAmount         Float?
@@ -41,11 +42,13 @@ model BankTransaction {
   @@unique([bankAccountId, fingerprint])
   @@index([bankAccountId])
   @@index([transactionDate])
+  @@index([categoryId])
 }
 
 model CreditCardTransaction {
   id                  String   @id @default(cuid())
   creditCardId        String
+  categoryId          String?  // Optional category for transfers and expense categorization
   transactionDate     DateTime
   transactionDetails  String
   amount              Float
@@ -58,6 +61,7 @@ model CreditCardTransaction {
   @@unique([creditCardId, fingerprint])
   @@index([creditCardId])
   @@index([transactionDate])
+  @@index([categoryId])
 }
 
 model Category {
@@ -71,4 +75,34 @@ model Category {
   updatedAt   DateTime @updatedAt
 
   @@index([type])
+}
+
+model TransferPattern {
+  id                String   @id @default(cuid())
+  pattern           String   @unique // e.g., "NITISH ICICI", "NITISHSBI"
+  targetBankName    String   // e.g., "ICICI", "SBI" - used to match BankAccount name
+  description       String?  // e.g., "Transfer to ICICI via Nitish"
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([isActive])
+}
+
+model TransferMatch {
+  id                    String   @id @default(cuid())
+  sourceBankAccountId   String   // Account sending the money
+  sourceTransactionId   String   // The debit transaction
+  targetBankAccountId   String   // Account receiving the money
+  targetTransactionId   String   // The credit transaction
+  amount                Float
+  transactionDate       DateTime
+  patternMatched        String?  // The pattern that matched
+  detectionMethod       String   // "pattern" or "amount_date"
+  createdAt             DateTime @default(now())
+
+  @@unique([sourceTransactionId, targetTransactionId])
+  @@index([sourceBankAccountId])
+  @@index([targetBankAccountId])
+  @@index([transactionDate])
 }
