@@ -33,6 +33,11 @@ const incomeCategories = [
   { name: 'Other Income', icon: '💰', color: '#88D8B0' },
 ];
 
+const transferCategories = [
+  { name: 'Account to Account', icon: '🔄', color: '#6C63FF' },
+  { name: 'Credit Card Payment', icon: '💰', color: '#FFB702' },
+];
+
 async function main() {
   console.log('Seeding categories...');
 
@@ -65,8 +70,22 @@ async function main() {
     });
   }
 
+  // Seed transfer categories
+  for (const category of transferCategories) {
+    await prisma.category.create({
+      data: {
+        name: category.name,
+        type: 'transfer',
+        icon: category.icon,
+        color: category.color,
+        isDefault: true,
+      },
+    });
+  }
+
   console.log(`✓ Seeded ${expenseCategories.length} expense categories`);
   console.log(`✓ Seeded ${incomeCategories.length} income categories`);
+  console.log(`✓ Seeded ${transferCategories.length} transfer categories`);
 }
 
 main()

@@ -63,7 +63,7 @@ model CreditCardTransaction {
 model Category {
   id          String   @id @default(cuid())
   name        String   @unique
-  type        String   // "income" or "expense"
+  type        String   // "income", "expense", or "transfer"
   icon        String?  // emoji or icon name
   color       String?  // hex color code
   isDefault   Boolean  @default(false) // true for pre-defined categories

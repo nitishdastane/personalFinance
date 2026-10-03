@@ -17,7 +17,7 @@ const DEFAULT_ICONS = [
 ];
 
 export default function Categories() {
-  const [newCategoryType, setNewCategoryType] = useState<'income' | 'expense'>('expense');
+  const [newCategoryType, setNewCategoryType] = useState<'income' | 'expense' | 'transfer'>('expense');
   const [newCategoryName, setNewCategoryName] = useState('');
   const [selectedIcon, setSelectedIcon] = useState('📌');
   const [selectedColor, setSelectedColor] = useState('#FF6B6B');
@@ -26,11 +26,13 @@ export default function Categories() {
 
   const { data: expenseData, isLoading: expenseLoading } = useCategories('expense');
   const { data: incomeData, isLoading: incomeLoading } = useCategories('income');
+  const { data: transferData, isLoading: transferLoading } = useCategories('transfer');
   const createCategoryMutation = useCreateCategory();
   const deleteCategoryMutation = useDeleteCategory();
 
   const expenseCategories = expenseData?.data || [];
   const incomeCategories = incomeData?.data || [];
+  const transferCategories = transferData?.data || [];
 
   const handleAddCategory = async () => {
     if (!newCategoryName.trim()) return;
@@ -146,11 +148,12 @@ export default function Categories() {
               <label className="text-sm font-medium text-gray-700 block mb-2">Type</label>
               <select
                 value={newCategoryType}
-                onChange={(e) => setNewCategoryType(e.target.value as 'income' | 'expense')}
+                onChange={(e) => setNewCategoryType(e.target.value as 'income' | 'expense' | 'transfer')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="expense">Expense</option>
                 <option value="income">Income</option>
+                <option value="transfer">Transfer</option>
               </select>
             </div>
 
@@ -255,6 +258,20 @@ export default function Categories() {
             <p className="text-gray-500">Loading...</p>
           ) : (
             renderCategoryList(incomeCategories, 'income')
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Transfer Categories */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Transfer Categories</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {transferLoading ? (
+            <p className="text-gray-500">Loading...</p>
+          ) : (
+            renderCategoryList(transferCategories, 'transfer')
           )}
         </CardContent>
       </Card>
