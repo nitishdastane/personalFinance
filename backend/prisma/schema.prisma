@@ -13,7 +13,10 @@ model BankAccount {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  transactions BankTransaction[]
+  transactions              BankTransaction[]
+  outgoingTransfers         TransferMatch[]   @relation("TransferSourceAccount")
+  incomingTransfers         TransferMatch[]   @relation("TransferTargetAccount")
+  creditCardPayments        TransferMatch[]   @relation("CreditCardPaymentFrom")
 }
 
 model CreditCard {
@@ -22,7 +25,8 @@ model CreditCard {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  transactions CreditCardTransaction[]
+  transactions       CreditCardTransaction[]
+  transferMatches    TransferMatch[]
 }
 
 model BankTransaction {
@@ -91,18 +95,28 @@ model TransferPattern {
 
 model TransferMatch {
   id                    String   @id @default(cuid())
-  sourceBankAccountId   String   // Account sending the money
-  sourceTransactionId   String   // The debit transaction
-  targetBankAccountId   String   // Account receiving the money
-  targetTransactionId   String   // The credit transaction
+  sourceBankAccountId   String?
+  sourceTransactionId   String
+  targetBankAccountId   String?
+  targetBankAccountId2  String?  // For credit card payments: bank account sending payment
+  targetCreditCardId    String?  // For credit card payments: credit card receiving payment
+  targetTransactionId   String
   amount                Float
   transactionDate       DateTime
-  patternMatched        String?  // The pattern that matched
-  detectionMethod       String   // "pattern" or "amount_date"
+  patternMatched        String?
+  detectionMethod       String   // "pattern", "amount_date", or "credit_card_payment"
   createdAt             DateTime @default(now())
+
+  sourceBankAccount     BankAccount? @relation("TransferSourceAccount", fields: [sourceBankAccountId], references: [id], onDelete: Cascade)
+  targetBankAccount     BankAccount? @relation("TransferTargetAccount", fields: [targetBankAccountId], references: [id], onDelete: Cascade)
+  paymentFromAccount    BankAccount? @relation("CreditCardPaymentFrom", fields: [targetBankAccountId2], references: [id], onDelete: Cascade)
+  targetCreditCard      CreditCard? @relation(fields: [targetCreditCardId], references: [id], onDelete: Cascade)
 
   @@unique([sourceTransactionId, targetTransactionId])
   @@index([sourceBankAccountId])
   @@index([targetBankAccountId])
+  @@index([targetBankAccountId2])
+  @@index([targetCreditCardId])
   @@index([transactionDate])
 }
+

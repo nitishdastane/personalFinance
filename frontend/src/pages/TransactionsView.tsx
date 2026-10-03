@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useBankTransactions, useCreditCardTransactions } from '../hooks/useTransactions';
 import { useDetectTransfers } from '../hooks/useTransferDetection';
+import { useTransferMatches } from '../hooks/useTransferMatches';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
@@ -30,6 +31,10 @@ export default function TransactionsView({
   const detectTransfersMutation = useDetectTransfers();
 
   const isBank = type === 'bank';
+  const { data: transferMatchesData } = useTransferMatches(
+    isBank ? accountId : undefined,
+    !isBank ? accountId : undefined
+  );
   const { data: bankData, isLoading: bankLoading } = useBankTransactions(
     isBank
       ? {
@@ -260,6 +265,14 @@ export default function TransactionsView({
                 </thead>
                 <tbody className="divide-y">
                   {transactions.map((tx: any) => {
+                    const transferMatch = (transferMatchesData?.data || []).find(
+                      (m: any) => m.sourceTransactionId === tx.id || m.targetTransactionId === tx.id
+                    );
+                    const transferInfo = transferMatch
+                      ? transferMatch.detectionMethod === 'credit_card_payment'
+                        ? 'Credit Card Payment'
+                        : `${transferMatch.sourceBankAccount?.name || 'Unknown'} → ${transferMatch.targetBankAccount?.name || 'Unknown'}`
+                      : null;
                     let amount = 0;
                     let type = '';
                     let isDebit = false;
@@ -299,8 +312,10 @@ export default function TransactionsView({
                         )}
                         <td className="px-4 py-2">
                           <select
-                            className="px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            defaultValue="other"
+                            className={`px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                              transferMatch ? 'bg-blue-50 border-blue-300' : ''
+                            }`}
+                            defaultValue={transferMatch ? 'account-to-account' : 'other'}
                           >
                             <option value="other">—</option>
                             <option value="account-to-account">Account to Account</option>
@@ -309,9 +324,10 @@ export default function TransactionsView({
                             <option value="food-dining">Food & Dining</option>
                           </select>
                         </td>
-                        <td className="px-4 py-2 text-xs text-gray-600">
-                          {/* Placeholder for From → To info */}
-                          —
+                        <td className={`px-4 py-2 text-xs font-medium ${
+                          transferInfo ? 'text-blue-600 bg-blue-50 rounded' : 'text-gray-600'
+                        }`}>
+                          {transferInfo || '—'}
                         </td>
                         <td className="px-4 py-2 text-right font-semibold">
                           {amount ? (
@@ -334,21 +350,60 @@ export default function TransactionsView({
           )}
 
           {pageCount > 1 && (
-            <div className="mt-4 flex justify-center gap-2">
+            <div className="mt-4 flex justify-center gap-1 flex-wrap">
               <Button
                 onClick={() => setPage(Math.max(1, page - 1))}
                 disabled={page === 1}
-                className={page === 1 ? 'opacity-50' : ''}
+                className={`${page === 1 ? 'opacity-50' : ''} px-3 py-1 text-sm`}
               >
-                Previous
+                Prev
               </Button>
-              <span className="px-4 py-2 text-sm text-gray-600">
-                Page {page} of {pageCount}
-              </span>
+
+              {(() => {
+                const pageNumbers = [];
+                const startPage = Math.max(1, page - 4);
+                const endPage = Math.min(pageCount, startPage + 9);
+                const adjustedStart = Math.max(1, endPage - 9);
+
+                for (let p = adjustedStart; p <= endPage; p++) {
+                  pageNumbers.push(p);
+                }
+
+                return (
+                  <>
+                    {pageNumbers.map(p => (
+                      <button
+                        key={p}
+                        onClick={() => setPage(p)}
+                        className={`px-3 py-1 text-sm border rounded ${
+                          p === page
+                            ? 'bg-blue-600 text-white border-blue-600'
+                            : 'border-gray-300 hover:bg-gray-100'
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    ))}
+
+                    {endPage < pageCount && (
+                      <>
+                        <span className="px-2 py-1 text-gray-600">...</span>
+                        <button
+                          onClick={() => setPage(pageCount)}
+                          className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-100"
+                        >
+                          {pageCount}
+                        </button>
+                      </>
+                    )}
+                  </>
+                );
+              })()}
+
               <Button
                 onClick={() => setPage(Math.min(pageCount, page + 1))}
                 disabled={page === pageCount}
-                className={page === pageCount ? 'opacity-50' : ''}
+                className={`${page === pageCount ? 'opacity-50' : ''} px-3 py-1 text-sm`}
               >
                 Next
               </Button>

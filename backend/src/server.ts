@@ -244,6 +244,47 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    // Transfers - Get transfer matches for an account or credit card
+    if (path === '/api/transfer-matches' && req.method === 'GET') {
+      try {
+        const accountId = params.get('accountId');
+        const creditCardId = params.get('creditCardId');
+
+        if (!accountId && !creditCardId) {
+          res.writeHead(400);
+          res.end(JSON.stringify({ error: 'accountId or creditCardId required' }));
+          return;
+        }
+
+        const whereCondition: any = {};
+        if (accountId) {
+          whereCondition.OR = [
+            { sourceBankAccountId: accountId },
+            { targetBankAccountId: accountId },
+            { targetBankAccountId2: accountId },
+          ];
+        } else if (creditCardId) {
+          whereCondition.targetCreditCardId = creditCardId;
+        }
+
+        const matches = await prisma.transferMatch.findMany({
+          where: whereCondition,
+          include: {
+            sourceBankAccount: true,
+            targetBankAccount: true,
+            paymentFromAccount: true,
+            targetCreditCard: true,
+          },
+        });
+        res.writeHead(200);
+        res.end(JSON.stringify({ success: true, data: matches }));
+      } catch (error) {
+        res.writeHead(400);
+        res.end(JSON.stringify({ success: false, error: (error as Error).message }));
+      }
+      return;
+    }
+
     // Transfer Patterns - GET all
     if (path === '/api/transfer-patterns' && req.method === 'GET') {
       try {

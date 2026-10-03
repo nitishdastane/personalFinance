@@ -7,9 +7,10 @@ export function useDetectTransfers() {
   return useMutation({
     mutationFn: () => detectTransfers(),
     onSuccess: () => {
-      // Invalidate transaction queries to refresh the data
+      // Invalidate transaction and transfer match queries to refresh the data
       queryClient.invalidateQueries({ queryKey: ['bankTransactions'] });
       queryClient.invalidateQueries({ queryKey: ['creditCardTransactions'] });
+      queryClient.invalidateQueries({ queryKey: ['transferMatches'] });
     },
   });
 }

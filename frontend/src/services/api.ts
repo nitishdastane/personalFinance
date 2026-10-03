@@ -206,3 +206,8 @@ export async function deleteTransferPattern(id: string) {
   });
   return response.json();
 }
+
+export async function getTransferMatches(accountId: string) {
+  const response = await fetch(`${API_BASE_URL}/transfer-matches?accountId=${accountId}`);
+  return response.json();
+}

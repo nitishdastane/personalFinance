@@ -52,9 +52,9 @@ export async function detectTransfers(): Promise<TransferDetectionResult> {
 
       const details = transaction.transactionDetails || '';
 
-      // Check each pattern
+      // Check each pattern (case-insensitive)
       for (const pattern of patterns) {
-        if (details.includes(pattern.pattern)) {
+        if (details.toUpperCase().includes(pattern.pattern.toUpperCase())) {
           // Found a matching pattern
           // Now find the target account based on the bank name
           const targetAccount = await prisma.bankAccount.findFirst({
@@ -134,7 +134,72 @@ export async function detectTransfers(): Promise<TransferDetectionResult> {
       }
     }
 
-    // TODO: Secondary matching by amount + date for remaining transactions
+    // Credit card payment detection
+    // Match bank transactions with "SBI Cards and Payment" to credit card "PAYMENT RECEIVED" transactions
+    const bankTransactionsForCC = await prisma.bankTransaction.findMany({
+      include: { bankAccount: true },
+    });
+
+    const creditCardTransactions = await prisma.creditCardTransaction.findMany({
+      include: { creditCard: true },
+    });
+
+    for (const bankTx of bankTransactionsForCC) {
+      if (matchedTransactionIds.has(bankTx.id)) continue;
+
+      const debitAmount = bankTx.debitAmount || 0;
+      if (debitAmount <= 0) continue;
+
+      const details = bankTx.transactionDetails || '';
+
+      // Check if this is a credit card payment (case-insensitive)
+      if (details.toUpperCase().includes('SBI CARDS AND PAYMENT')) {
+        // Look for matching credit card payment received transaction
+        const matchingCCTx = creditCardTransactions.find(
+          ccTx =>
+            ccTx.transactionDate.getTime() === bankTx.transactionDate.getTime() &&
+            ccTx.amount === debitAmount &&
+            (ccTx.transactionDetails?.includes('PAYMENT RECEIVED') ||
+              ccTx.transactionDetails?.includes('Payment'))
+        );
+
+        if (matchingCCTx) {
+          try {
+            await prisma.transferMatch.create({
+              data: {
+                sourceBankAccountId: bankTx.bankAccountId,
+                sourceTransactionId: bankTx.id,
+                targetBankAccountId2: bankTx.bankAccountId,
+                targetCreditCardId: matchingCCTx.creditCardId,
+                targetTransactionId: matchingCCTx.id,
+                amount: debitAmount,
+                transactionDate: bankTx.transactionDate,
+                detectionMethod: 'credit_card_payment',
+                patternMatched: 'SBI Cards and Payment',
+              },
+            });
+
+            result.matched.push({
+              sourceTransactionId: bankTx.id,
+              targetTransactionId: matchingCCTx.id,
+              sourceAccount: bankTx.bankAccount.name,
+              targetAccount: matchingCCTx.creditCard?.name || 'Credit Card',
+              amount: debitAmount,
+              date: bankTx.transactionDate.toISOString().split('T')[0],
+              method: 'credit_card_payment',
+            });
+
+            matchedTransactionIds.add(bankTx.id);
+            matchedTransactionIds.add(matchingCCTx.id);
+            result.found++;
+          } catch (e: any) {
+            if (e.code !== 'P2002') {
+              throw e;
+            }
+          }
+        }
+      }
+    }
 
     return result;
   } catch (error) {
