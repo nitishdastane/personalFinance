@@ -66,12 +66,14 @@ export default function TransactionsView({
     setDetectMessage(null);
     try {
       const result = await detectTransfersMutation.mutateAsync();
+      const found = result?.data?.found || 0;
       setDetectMessage({
         type: 'success',
-        text: `Found ${result.data.found} internal transfers and marked them`,
+        text: `Found ${found} internal transfers and marked them`,
       });
       setTimeout(() => setDetectMessage(null), 5000);
     } catch (error) {
+      console.error('Transfer detection error:', error);
       setDetectMessage({
         type: 'error',
         text: error instanceof Error ? error.message : 'Failed to detect transfers',

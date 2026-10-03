@@ -91,19 +91,26 @@ export async function detectTransfers(): Promise<TransferDetectionResult> {
           }
 
           // Found a transfer pair!
-          // Create transfer match record
-          await prisma.transferMatch.create({
-            data: {
-              sourceBankAccountId: transaction.bankAccountId,
-              sourceTransactionId: transaction.id,
-              targetBankAccountId: targetAccount.id,
-              targetTransactionId: targetTransaction.id,
-              amount: debitAmount,
-              transactionDate: transaction.transactionDate,
-              patternMatched: pattern.pattern,
-              detectionMethod: 'pattern',
-            },
-          });
+          // Create transfer match record (or skip if already exists)
+          try {
+            await prisma.transferMatch.create({
+              data: {
+                sourceBankAccountId: transaction.bankAccountId,
+                sourceTransactionId: transaction.id,
+                targetBankAccountId: targetAccount.id,
+                targetTransactionId: targetTransaction.id,
+                amount: debitAmount,
+                transactionDate: transaction.transactionDate,
+                patternMatched: pattern.pattern,
+                detectionMethod: 'pattern',
+              },
+            });
+          } catch (e: any) {
+            // Skip if already exists (unique constraint)
+            if (e.code !== 'P2002') {
+              throw e;
+            }
+          }
 
           // TODO: Update both transactions with Transfer category
           // Note: We can't directly update category on transaction without a categoryId field
