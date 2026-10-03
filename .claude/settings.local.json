@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s http://172.18.0.3:3001/test)",
+      "Bash(docker compose *)"
+    ]
+  }
+}

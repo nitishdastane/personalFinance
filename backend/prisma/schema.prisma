@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model BankAccount {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transactions BankTransaction[]
+}
+
+model CreditCard {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transactions CreditCardTransaction[]
+}
+
+model BankTransaction {
+  id                  String   @id @default(cuid())
+  bankAccountId       String
+  transactionDate     DateTime
+  transactionDetails  String
+  debitAmount         Float?
+  creditAmount        Float?
+  balance             Float
+  fingerprint         String   // SHA-256 hash of unique fields
+  createdAt           DateTime @default(now())
+
+  bankAccount BankAccount @relation(fields: [bankAccountId], references: [id], onDelete: Cascade)
+
+  @@unique([bankAccountId, fingerprint])
+  @@index([bankAccountId])
+  @@index([transactionDate])
+}
+
+model CreditCardTransaction {
+  id                  String   @id @default(cuid())
+  creditCardId        String
+  transactionDate     DateTime
+  transactionDetails  String
+  amount              Float
+  type                String   // "Debit" or "Credit"
+  fingerprint         String   // SHA-256 hash of unique fields
+  createdAt           DateTime @default(now())
+
+  creditCard CreditCard @relation(fields: [creditCardId], references: [id], onDelete: Cascade)
+
+  @@unique([creditCardId, fingerprint])
+  @@index([creditCardId])
+  @@index([transactionDate])
+}

@@ -1,0 +1,31 @@
+Credit Card Name,Transaction Date,Transaction Details,Amount,Type
+HDFC Credit Card,2026-01-02,Amazon Purchase,5500.00,Debit
+HDFC Credit Card,2026-01-05,Starbucks Coffee,450.00,Debit
+HDFC Credit Card,2026-01-08,Restaurant Dinner,2800.00,Debit
+HDFC Credit Card,2026-01-12,Gas Station,1200.00,Debit
+HDFC Credit Card,2026-01-15,Online Subscription,199.00,Debit
+HDFC Credit Card,2026-01-20,Cashback Reward,500.00,Credit
+HDFC Credit Card,2026-01-25,Hotel Stay,8500.00,Debit
+HDFC Credit Card,2026-02-01,Grocery Store,3200.00,Debit
+HDFC Credit Card,2026-02-05,Movie Tickets,800.00,Debit
+HDFC Credit Card,2026-02-10,Electronics Store,12000.00,Debit
+HDFC Credit Card,2026-02-15,Uber Rides,1500.00,Debit
+HDFC Credit Card,2026-02-20,Cashback Reward,600.00,Credit
+HDFC Credit Card,2026-02-28,Gym Membership,1500.00,Debit
+HDFC Credit Card,2026-03-05,Book Store,2100.00,Debit
+HDFC Credit Card,2026-03-10,Flight Booking,25000.00,Debit
+HDFC Credit Card,2026-03-15,Spa Services,3500.00,Debit
+HDFC Credit Card,2026-03-20,Cashback Reward,750.00,Credit
+Axis Credit Card,2026-01-03,Restaurant,1800.00,Debit
+Axis Credit Card,2026-01-10,Shopping Mall,6500.00,Debit
+Axis Credit Card,2026-01-15,Fuel,2000.00,Debit
+Axis Credit Card,2026-02-01,Online Purchase,4500.00,Debit
+Axis Credit Card,2026-02-10,Dining Out,2200.00,Debit
+Axis Credit Card,2026-02-15,Reward Points,300.00,Credit
+Axis Credit Card,2026-03-01,Flight Ticket,18000.00,Debit
+Axis Credit Card,2026-03-10,Cashback,400.00,Credit
+ICICI Credit Card,2026-01-05,Pharmacy,850.00,Debit
+ICICI Credit Card,2026-01-12,Supermarket,5600.00,Debit
+ICICI Credit Card,2026-02-03,Entertainment,3200.00,Debit
+ICICI Credit Card,2026-02-20,Rewards Bonus,500.00,Credit
+ICICI Credit Card,2026-03-08,Travel Booking,22000.00,Debit

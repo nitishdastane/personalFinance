@@ -1,0 +1,21 @@
+Bank Name,Transaction Date,Transaction Details,Debit Amount,Credit Amount,Balance
+HDFC Bank,2026-01-01,Opening Balance,,50000.00,50000.00
+HDFC Bank,2026-01-02,ATM Withdrawal,5000.00,,45000.00
+HDFC Bank,2026-01-05,Salary,,75000.00,120000.00
+HDFC Bank,2026-01-10,Electricity Bill,2500.00,,117500.00
+HDFC Bank,2026-01-15,Online Shopping,8500.00,,109000.00
+HDFC Bank,2026-01-20,Insurance Premium,12000.00,,97000.00
+HDFC Bank,2026-02-01,Rent Payment,25000.00,,72000.00
+HDFC Bank,2026-02-05,Salary,,75000.00,147000.00
+HDFC Bank,2026-02-10,Water Bill,1500.00,,145500.00
+HDFC Bank,2026-02-15,Groceries,8000.00,,137500.00
+HDFC Bank,2026-02-28,Internet Bill,1999.00,,135501.00
+HDFC Bank,2026-03-01,Rent Payment,25000.00,,110501.00
+HDFC Bank,2026-03-05,Salary,,75000.00,185501.00
+HDFC Bank,2026-03-10,Medical Expense,5000.00,,180501.00
+HDFC Bank,2026-03-15,Dining Out,3500.00,,177001.00
+Axis Bank,2026-01-03,Opening Balance,,100000.00,100000.00
+Axis Bank,2026-01-08,Investment,50000.00,,50000.00
+Axis Bank,2026-02-01,Interest,,2500.00,52500.00
+Axis Bank,2026-02-15,ATM Withdrawal,10000.00,,42500.00
+Axis Bank,2026-03-01,Online Transfer,25000.00,,17500.00
